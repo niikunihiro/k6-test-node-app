@@ -1,0 +1,338 @@
+openapi: 3.0.0
+x-stoplight:
+  id: yr5my61d6o7iq
+info:
+  title: Stress Test Target Server
+  version: '1.0'
+  description: 負荷テストの負荷対象サーバーのAPI
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /login:
+    post:
+      summary: Login to API Server
+      operationId: post-login
+      responses:
+        '302':
+          description: When login fails
+          headers:
+            Location:
+              schema:
+                type: string
+                default: /login
+              description: Redirect URL
+        '303':
+          description: When login is successful
+          headers:
+            Location:
+              schema:
+                type: string
+                default: /
+              description: Redirect URL
+            Set-Cookie:
+              schema:
+                type: string
+                example: 'connect.sid=s%3ABmcxg5NPmJY6S2ZjiAynBfStoNOxeXkk.QtXOHyvNtKJXIKvrKgQxDsm6ar5NH6Sooh4RHRY4Dto; Path=/; Expires=Thu, 22 Sep 2022 03:20:45 GMT; HttpOnly'
+              description: Set login cookie
+      x-internal: false
+      description: Login to API Server.
+      security: []
+      parameters: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                  example: yamada-naoko
+                  minLength: 1
+                password:
+                  type: string
+                  example: topSecretSecret
+                  minLength: 1
+              required:
+                - client_id
+                - password
+      tags:
+        - Auth
+  /me:
+    get:
+      summary: Get login user information
+      tags:
+        - User
+      responses:
+        '200':
+          $ref: '#/components/responses/userEntity'
+        '302':
+          $ref: '#/components/responses/302'
+      operationId: get-me
+      description: Get login user information.
+  /post:
+    post:
+      summary: Create New Post
+      operationId: post-post
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: success
+                required:
+                  - status
+              examples:
+                example-1:
+                  value:
+                    status: success
+        '302':
+          $ref: '#/components/responses/302'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: failed
+                required:
+                  - status
+              examples:
+                bad request example:
+                  value:
+                    status: failed
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: failed
+              examples:
+                internal server error example:
+                  value:
+                    status: failed
+      description: Create a new post.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                example-1:
+                  post: my first post. hello stress test world!
+              properties:
+                post:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+              required:
+                - post
+            examples:
+              example-1:
+                value:
+                  post: my first post. hello stress test world!
+      tags:
+        - Post
+  /posts:
+    get:
+      summary: Get Post Information
+      tags:
+        - Post
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+              examples:
+                post info example:
+                  value:
+                    posts:
+                      - postId: 2783
+                        post: それで夏休みに当然帰るべきところを、わざと避けて東京の近くで遊んでいたのである。
+                        postedAt: '2022-09-21T10:02:44.000Z'
+                        _embedded:
+                          postedUser:
+                            userId: 1
+                            clientId: yamada-naoko
+                            firstName: naoko
+                            lastName: yamada
+                      - postId: 2782
+                        post: それで夏休みに当然帰るべきところを、わざと避けて東京の近くで遊んでいたのである。
+                        postedAt: '2022-09-20T10:02:44.000Z'
+                        _embedded:
+                          postedUser:
+                            userId: 1
+                            clientId: yamada-naoko
+                            firstName: naoko
+                            lastName: yamada
+        '302':
+          $ref: '#/components/responses/302'
+      operationId: get-posts
+      parameters:
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+          in: query
+          name: take
+        - schema:
+            type: integer
+            minimum: 0
+          in: query
+          name: offset
+      description: Get post information.
+  /user/posts:
+    get:
+      summary: Get Users Post Information
+      tags:
+        - Post
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+              examples:
+                post info example:
+                  value:
+                    posts:
+                      - postId: 2783
+                        post: それで夏休みに当然帰るべきところを、わざと避けて東京の近くで遊んでいたのである。
+                        postedAt: '2022-09-21T10:02:44.000Z'
+                        _embedded:
+                          postedUser:
+                            userId: 1
+                            clientId: yamada-naoko
+                            firstName: naoko
+                            lastName: yamada
+                      - postId: 2782
+                        post: それで夏休みに当然帰るべきところを、わざと避けて東京の近くで遊んでいたのである。
+                        postedAt: '2022-09-20T10:02:44.000Z'
+                        _embedded:
+                          postedUser:
+                            userId: 1
+                            clientId: yamada-naoko
+                            firstName: naoko
+                            lastName: yamada
+        '302':
+          $ref: '#/components/responses/302'
+      operationId: get-user-posts
+      parameters:
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+          in: query
+          name: take
+        - schema:
+            type: integer
+            minimum: 0
+          in: query
+          name: offset
+      description: Get users post information.
+    parameters: []
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      description: User Information
+      properties:
+        userId:
+          type: integer
+          description: Unique identifier for the given user.
+        clientId:
+          type: string
+          description: Unique identifier for the given user.
+        firstName:
+          type: string
+        lastName:
+          type: string
+      required:
+        - userId
+        - clientId
+        - firstName
+        - lastName
+      x-examples:
+        user infomation example:
+          userId: 1
+          clientId: yamada-naoko
+          firstName: naoko
+          lastName: yamada
+    Post:
+      type: object
+      x-examples:
+        example-1:
+          postId: 2783
+          post: my third post. hello stress test world!
+          postedAt: '2022-09-21T16:50:02.000Z'
+          _embedded:
+            postedUser:
+              clientId: yamada-naoko
+              firstName: naoko
+              lastName: yamada
+      properties:
+        postId:
+          type: integer
+        post:
+          type: string
+        postedAt:
+          type: string
+        _embedded:
+          type: object
+          properties:
+            postedUser:
+              $ref: '#/components/schemas/User'
+      description: Post Information
+      title: Post
+  securitySchemes:
+    Session:
+      name: connect.sid
+      type: apiKey
+      in: cookie
+      description: session cookie
+  responses:
+    '302':
+      description: When Login Fails
+      headers:
+        Location:
+          schema:
+            type: string
+            default: /login
+          description: Redirect URL
+    userEntity:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+security:
+  - Session: []
+tags:
+  - name: Auth
+  - name: Post
+  - name: User
