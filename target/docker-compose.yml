@@ -1,0 +1,57 @@
+version: '3'
+
+services:
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: 'target-openapi-viewer'
+    ports:
+      - 8001:8080
+    volumes:
+      - ./openapi/target-server.yaml:/openapi.yaml
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+  mysql:
+    image: mysql:8.0
+    container_name: 'target-mysql'
+    ports:
+      - 13306:3306
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/conf:/etc/mysql/conf.d
+      - ./mysql/initdb:/docker-entrypoint-initdb.d
+    env_file:
+      - docker.env
+  redis:
+    image: redis:7.0
+    container_name: 'target-redis'
+    command: redis-server --appendonly yes
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: 'target-server'
+    ports:
+      - 8000:80
+    depends_on:
+      - 'node'
+  node:
+    build:
+      context: ./node:16
+      dockerfile: Dockerfile
+    container_name: 'target-app'
+    ports:
+      - 13333:3333
+    volumes:
+      - ./src:/app
+    env_file:
+      - docker.env
+    working_dir: /app
+    command: >
+      /bin/sh -c "npm install --production && npm run start"
+    # /bin/sh -c "npm install && npm run start:dev"
+    tty: true
+    stdin_open: true
+    privileged: true
+    depends_on:
+      mysql:
+        condition: service_started
